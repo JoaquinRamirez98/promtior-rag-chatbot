@@ -1,0 +1,9 @@
+langchain
+ollama
+transformers
+faiss-cpu
+requests
+beautifulsoup4
+PyQt5
+PyPDF2
+customtkinter
