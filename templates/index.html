@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Promtior</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .chat-box {
+            height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .input-box {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin: 10px 0;
+        }
+        .bot-message {
+            color: #4CAF50;
+        }
+        .user-message {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="user-message" class="input-box" placeholder="Escribe tu pregunta...">
+        <button class="button" onclick="sendMessage()">Enviar</button>
+    </div>
+
+    <script>
+        function appendMessage(message, sender) {
+            const chatBox = document.getElementById("chat-box");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.classList.add(sender);
+            messageDiv.textContent = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll down to show the latest message
+        }
+
+        function sendMessage() {
+            const userMessage = document.getElementById("user-message").value;
+            if (userMessage.trim() === "") return;
+
+            appendMessage(userMessage, "user-message");  // Mostrar mensaje del usuario
+
+            document.getElementById("user-message").value = "";  // Limpiar campo de texto
+
+            // Enviar la pregunta al servidor (Flask)
+            fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "question": userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botAnswer = data.answer;
+                appendMessage(botAnswer, "bot-message");  // Mostrar respuesta del chatbot
+            })
+            .catch(error => {
+                appendMessage("Lo siento, ocurrió un error. Intenta de nuevo.", "bot-message");
+            });
+        }
+
+        // Permite enviar la pregunta al presionar "Enter"
+        document.getElementById("user-message").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
