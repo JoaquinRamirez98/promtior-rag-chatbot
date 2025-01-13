@@ -1,0 +1,39 @@
+Objetivo del Proyecto
+El desafío consistía en desarrollar un chatbot utilizando la arquitectura RAG (Retrieval-Augmented Generation), capaz de responder preguntas sobre el contenido del sitio web y documentos PDF de la empresa Promtior. El chatbot fue implementado utilizando LangChain para el manejo de la lógica de recuperación y generación de respuestas, y FAISS para almacenar y buscar de manera eficiente los embeddings generados a partir del contenido.
+
+Implementación
+1. Carga de contenido: Se implementaron funciones para cargar el contenido de dos fuentes principales:
+
+El sitio web de Promtior: Utilicé requests y BeautifulSoup para extraer el contenido relevante.
+Documentos PDF: Para leer los PDFs utilicé la librería PyPDF2, que permitió extraer los textos de los documentos.
+2. Vectorización:
+
+Utilicé Ollama para generar los embeddings de los textos extraídos. Estos embeddings fueron almacenados en FAISS, lo que permite realizar búsquedas rápidas y eficientes en los documentos cargados.
+3. Generación de respuestas:
+
+La arquitectura RAG fue configurada para que el chatbot, al recibir una pregunta, consulte el vectorstore de FAISS para recuperar fragmentos relevantes y luego los pase a un modelo generativo (como GPT-3) para generar la respuesta final.
+Desafíos Encontrados
+1. Problemas con la instalación de dependencias:
+
+Al principio, hubo dificultades al instalar versiones específicas de bibliotecas debido a incompatibilidades entre las dependencias de LangChain y FAISS. Para solucionarlo, decidí permitir que pip resolviera las dependencias sin restricciones de versión.
+2. Conexión a Ollama:
+
+La integración de Ollama para generar embeddings en un entorno en la nube (Railway) presentó problemas de conexión. Debido a que la versión de Ollama que utilizo localmente es de 4 GB, no pude usarla en Railway debido a las restricciones de tamaño. Inicialmente, desarrollé una versión con GUI que funcionaba correctamente, pero al intentar ejecutar la librería sin GUI en Railway, el servicio fallaba. Después de quitar la GUI, el build fue exitoso, pero el despliegue se caía al ejecutar el código debido a las restricciones de tamaño en la nube.
+3. Despliegue en Railway:
+
+El proceso de despliegue en Railway fue complicado debido a las restricciones en las configuraciones de la nube y la necesidad de configurar adecuadamente las variables de entorno. A pesar de los ajustes necesarios, el chatbot fue finalmente desplegado correctamente en el servicio de Railway.
+Soluciones
+1. Resolución de dependencias:
+
+Modifiqué las configuraciones de las bibliotecas y utilicé herramientas como pip para permitir la resolución flexible de las dependencias.
+2. Conexión con Ollama:
+
+Ajusté las configuraciones de red y volví a configurar las variables de entorno para asegurarme de que la API de Ollama estuviera disponible de manera consistente.
+3. Despliegue en Railway:
+
+Utilicé las herramientas de Railway para desplegar el proyecto en la nube, configurando correctamente las variables de entorno y verificando las dependencias antes de realizar el despliegue.
+
+
+LINK DEL REPOSITORIO:
+https://github.com/JoaquinRamirez98/promtior-rag-chatbot
+
