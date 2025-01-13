@@ -9,3 +9,4 @@ llama-index
 customtkinter
 langchain-ollama
 langchain-community
+PyPDF2
