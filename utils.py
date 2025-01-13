@@ -8,9 +8,14 @@ import PyPDF2
 
 def load_website_content(url):
     """Carga el contenido de un sitio web."""
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    return soup.get_text(separator="\n").strip()
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Lanza una excepción si hay un error de HTTP
+        soup = BeautifulSoup(response.content, 'html.parser')
+        return soup.get_text(separator="\n").strip()
+    except requests.exceptions.RequestException as e:
+        print(f"Error al cargar el sitio web: {e}")
+        return None
 
 def load_pdf_content(pdf_path):
     """Carga el contenido de un archivo PDF."""
@@ -18,9 +23,17 @@ def load_pdf_content(pdf_path):
         print(f"PDF file not found: {pdf_path}")
         return None
 
-    with open(pdf_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        return "\n".join(page.extract_text() for page in reader.pages)
+    try:
+        with open(pdf_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            pdf_text = "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
+            if not pdf_text:
+                print(f"El PDF no contiene texto legible o está dañado: {pdf_path}")
+                return None
+            return pdf_text
+    except Exception as e:
+        print(f"Error al leer el PDF: {e}")
+        return None
 
 def create_vectorstore(text, embeddings_class):
     """Crea un vectorstore a partir del texto proporcionado."""
@@ -33,7 +46,6 @@ def create_vectorstore(text, embeddings_class):
         print(f"Chunk {i + 1}: {chunk[:100]}...")
 
     return FAISS.from_texts(chunks, embeddings_class)
-
 
 # Función para realizar consultas al chatbot
 def query_chatbot(qa_chain, question, chat_history):
