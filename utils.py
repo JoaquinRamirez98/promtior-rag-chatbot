@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import requests
 import os
 import PyPDF2
+import pdfplumber
 
 def load_website_content(url):
     """Carga el contenido de un sitio web."""
@@ -18,23 +19,27 @@ def load_website_content(url):
         return None
 
 def load_pdf_content(pdf_path):
-    """Carga el contenido de un archivo PDF."""
+    """Carga el contenido de un archivo PDF con pdfplumber."""
     if not os.path.exists(pdf_path):
         print(f"PDF file not found: {pdf_path}")
         return None
 
     try:
-        with open(pdf_path, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
-            pdf_text = "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
-            if not pdf_text:
-                print(f"El PDF no contiene texto legible o está dañado: {pdf_path}")
-                return None
-            return pdf_text
+        pdf_text = ""
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages:
+                pdf_text += page.extract_text()
+
+        if not pdf_text:
+            print(f"El PDF no contiene texto legible o está dañado: {pdf_path}")
+            return None
+
+        return pdf_text
+
     except Exception as e:
         print(f"Error al leer el PDF: {e}")
         return None
-
+    
 def create_vectorstore(text, embeddings_class):
     """Crea un vectorstore a partir del texto proporcionado."""
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
