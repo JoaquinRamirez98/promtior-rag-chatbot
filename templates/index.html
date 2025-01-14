@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Promtior</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        #chat-container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+        .message {
+            margin: 10px 0;
+        }
+        .message.user {
+            text-align: right;
+            color: #007bff;
+        }
+        .message.bot {
+            text-align: left;
+            color: #555;
+        }
+        #upload-container {
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            text-align: center;
+        }
+        #upload-container input, #upload-container button {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot de Promtior</h1>
+
+    <div id="upload-container">
+        <h2>Cargar un archivo PDF</h2>
+        <form id="pdf-upload-form" enctype="multipart/form-data">
+            <input type="file" id="pdf-file" name="pdf-file" accept=".pdf">
+            <button type="submit">Cargar PDF</button>
+        </form>
+    </div>
+
+    <div id="chat-container">
+        <h2>Chat:</h2>
+        <div id="chat-history"></div>
+        <form id="chat-form">
+            <input type="text" id="user-question" placeholder="Escribe tu pregunta" required>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <script>
+        const chatHistory = document.getElementById("chat-history");
+
+        // Manejo de la carga del PDF
+        document.getElementById("pdf-upload-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById("pdf-file");
+            formData.append("pdf", fileInput.files[0]);
+
+            const response = await fetch("/upload-pdf", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        // Manejo de preguntas al chatbot
+        document.getElementById("chat-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const userQuestion = document.getElementById("user-question").value;
+
+            // Añadir el mensaje del usuario al historial
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user");
+            userMessage.textContent = `Tú: ${userQuestion}`;
+            chatHistory.appendChild(userMessage);
+
+            const response = await fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: userQuestion })
+            });
+
+            const result = await response.json();
+
+            // Añadir la respuesta del bot al historial
+            const botMessage = document.createElement("div");
+            botMessage.classList.add("message", "bot");
+            botMessage.textContent = `Bot: ${result.answer}`;
+            chatHistory.appendChild(botMessage);
+
+            // Limpiar el input
+            document.getElementById("user-question").value = "";
+
+            // Desplazarse automáticamente al final del historial
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        });
+    </script>
+</body>
+</html>
