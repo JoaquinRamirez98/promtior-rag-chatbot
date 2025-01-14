@@ -4,8 +4,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from bs4 import BeautifulSoup
 import requests
 import os
-import PyPDF2
-import pdfplumber
+from PyPDF2 import PdfReader
+import os
+from langchain.text_splitter import CharacterTextSplitter
 
 def load_website_content(url):
     """Carga el contenido de un sitio web."""
@@ -19,37 +20,32 @@ def load_website_content(url):
         return None
 
 def load_pdf_content(pdf_path):
-    """Carga el contenido de un archivo PDF con pdfplumber."""
+    """Carga el contenido de un archivo PDF utilizando PyPDF2."""
     if not os.path.exists(pdf_path):
         print(f"PDF file not found: {pdf_path}")
         return None
 
     try:
         pdf_text = ""
-        with pdfplumber.open(pdf_path) as pdf:
-            for page in pdf.pages:
-                pdf_text += page.extract_text()
+        reader = PdfReader(pdf_path)
+        for page in reader.pages:
+            pdf_text += page.extract_text()  # Extrae el texto de cada página
 
-        if not pdf_text:
+        if not pdf_text.strip():
             print(f"El PDF no contiene texto legible o está dañado: {pdf_path}")
             return None
 
-        return pdf_text
+        return pdf_text.strip()  # Devuelve el texto limpio
 
     except Exception as e:
-        print(f"Error al leer el PDF: {e}")
+        print(f"Error al leer el PDF con PyPDF2: {e}")
         return None
-    
+
 def create_vectorstore(text, embeddings_class):
-    """Crea un vectorstore a partir del texto proporcionado."""
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)  # Ajuste para chunks más grandes
     chunks = text_splitter.split_text(text)
 
-    # Depuración: verifica los fragmentos generados
-    print(f"Generated {len(chunks)} text chunks. Sample:")
-    for i, chunk in enumerate(chunks[:3]):
-        print(f"Chunk {i + 1}: {chunk[:100]}...")
-
+    print(f"Generated {len(chunks)} text chunks.")
     return FAISS.from_texts(chunks, embeddings_class)
 
 # Función para realizar consultas al chatbot

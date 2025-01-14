@@ -8,105 +8,113 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        .chat-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background-color: #fff;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
         }
-        .chat-box {
-            height: 400px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        h1, h2 {
+            color: #333;
         }
-        .input-box {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .button:hover {
-            background-color: #45a049;
+        #chat-container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
         }
         .message {
             margin: 10px 0;
         }
-        .bot-message {
-            color: #4CAF50;
+        .message.user {
+            text-align: right;
+            color: #007bff;
         }
-        .user-message {
+        .message.bot {
+            text-align: left;
             color: #555;
+        }
+        #upload-container {
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            text-align: center;
+        }
+        #upload-container input, #upload-container button {
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
+    <h1>Chatbot de Promtior</h1>
 
-    <div class="chat-container">
-        <div class="chat-box" id="chat-box"></div>
-        <input type="text" id="user-message" class="input-box" placeholder="Escribe tu pregunta...">
-        <button class="button" onclick="sendMessage()">Enviar</button>
+    <div id="upload-container">
+        <h2>Cargar un archivo PDF</h2>
+        <form id="pdf-upload-form" enctype="multipart/form-data">
+            <input type="file" id="pdf-file" name="pdf-file" accept=".pdf">
+            <button type="submit">Cargar PDF</button>
+        </form>
+    </div>
+
+    <div id="chat-container">
+        <h2>Chat:</h2>
+        <div id="chat-history"></div>
+        <form id="chat-form">
+            <input type="text" id="user-question" placeholder="Escribe tu pregunta" required>
+            <button type="submit">Enviar</button>
+        </form>
     </div>
 
     <script>
-        function appendMessage(message, sender) {
-            const chatBox = document.getElementById("chat-box");
-            const messageDiv = document.createElement("div");
-            messageDiv.classList.add("message");
-            messageDiv.classList.add(sender);
-            messageDiv.textContent = message;
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll down to show the latest message
-        }
+        const chatHistory = document.getElementById("chat-history");
 
-        function sendMessage() {
-            const userMessage = document.getElementById("user-message").value;
-            if (userMessage.trim() === "") return;
+        // Manejo de la carga del PDF
+        document.getElementById("pdf-upload-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById("pdf-file");
+            formData.append("pdf", fileInput.files[0]);
 
-            appendMessage(userMessage, "user-message");  // Mostrar mensaje del usuario
+            const response = await fetch("/upload-pdf", {
+                method: "POST",
+                body: formData
+            });
 
-            document.getElementById("user-message").value = "";  // Limpiar campo de texto
+            const result = await response.json();
+            alert(result.message);
+        });
 
-            // Enviar la pregunta al servidor (Flask)
-            fetch("/ask", {
+        // Manejo de preguntas al chatbot
+        document.getElementById("chat-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const userQuestion = document.getElementById("user-question").value;
+
+            // Añadir el mensaje del usuario al historial
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user");
+            userMessage.textContent = `Tú: ${userQuestion}`;
+            chatHistory.appendChild(userMessage);
+
+            const response = await fetch("/ask", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ "question": userMessage })
-            })
-            .then(response => response.json())
-            .then(data => {
-                const botAnswer = data.answer;
-                appendMessage(botAnswer, "bot-message");  // Mostrar respuesta del chatbot
-            })
-            .catch(error => {
-                appendMessage("Lo siento, ocurrió un error. Intenta de nuevo.", "bot-message");
+                body: JSON.stringify({ question: userQuestion })
             });
-        }
 
-        // Permite enviar la pregunta al presionar "Enter"
-        document.getElementById("user-message").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
+            const result = await response.json();
+
+            // Añadir la respuesta del bot al historial
+            const botMessage = document.createElement("div");
+            botMessage.classList.add("message", "bot");
+            botMessage.textContent = `Bot: ${result.answer}`;
+            chatHistory.appendChild(botMessage);
+
+            // Limpiar el input
+            document.getElementById("user-question").value = "";
+
+            // Desplazarse automáticamente al final del historial
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         });
     </script>
-
 </body>
 </html>
