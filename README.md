@@ -31,13 +31,13 @@ API de Ollama: Conexión para la generación de embeddings
 ## Estructura del Proyecto
 
 promtior/
-├── chatbot.py          # Lógica principal del chatbot
-├── gui.py              # Interfaz gráfica para interactuar con el chatbot
-├── utils.py            # Funciones de utilidad (procesamiento de texto y PDF, carga de datos)
-├── requirements.txt    # Dependencias del proyecto
-├── README.md           # Descripción del proyecto
-├── resources/          # Archivos adicionales (como documentos PDF)
-└── .env                # Variables de entorno necesarias (API Keys, configuraciones)
+chatbot.py          # Lógica principal del chatbot
+ gui.py              # Interfaz gráfica para interactuar con el chatbot
+ utils.py            # Funciones de utilidad (procesamiento de texto y PDF, carga de datos)
+requirements.txt    # Dependencias del proyecto
+ README.md           # Descripción del proyecto
+ resources/          # Archivos adicionales (como documentos PDF)
+ .env                # Variables de entorno necesarias (API Keys, configuraciones)
 
 
 Requisitos Previos
