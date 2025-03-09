@@ -3,11 +3,13 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain_ollama.embeddings import OllamaEmbeddings
 from utils import load_website_content, create_vectorstore, load_pdf_content
 from langchain.prompts import PromptTemplate
-from utils import load_pdf_content 
+from utils import load_pdf_content
+import re
 
 # Define un prompt base
 base_prompt = """
-Eres un asistente conversacional amigable e informado. Usa la información proporcionada en "context" para responder las preguntas del usuario.
+Eres un asistente conversacional amigable e informado. 
+Usa la información proporcionada en "context" para responder las preguntas del usuario.
 Si no encuentras información relevante en el "context", usa tu conocimiento general para ayudar de manera útil y cortés.
 
 Contexto: {context}
@@ -20,7 +22,7 @@ Respuesta:
 
 
 # Cargar y procesar el contenido del sitio web
-text = load_website_content('https://www.promtior.ai')  # Cambia la URL si es necesario
+text = load_website_content('https://www.promtior.ai') 
 embeddings = OllamaEmbeddings(model="llama3")
 vectorstore = create_vectorstore(text, embeddings_class=embeddings)
 llama_model = OllamaLLM(model="llama3", temperature=0.7)
@@ -38,6 +40,11 @@ qa_chain = ConversationalRetrievalChain.from_llm(
 # Variable global para mantener el historial de chat
 chat_history = []
 
+def formatear_texto(texto):
+    # Este regex inserta dos saltos de línea después de un punto seguido de un espacio y una letra mayúscula.
+    texto_formateado = re.sub(r'\.\s+([A-Z])', r'.\n\n\1', texto)
+    return texto_formateado
+
 def add_pdf_to_vectorstore(pdf_text):
     """Añade el contenido de un PDF al vectorstore existente."""
     global vectorstore
@@ -46,25 +53,31 @@ def add_pdf_to_vectorstore(pdf_text):
 
 def ask_question(user_question):
     """
-    Esta función recibe una pregunta del usuario y devuelve la respuesta generada por el modelo.
+    Recibe una pregunta del usuario, consulta el modelo generativo utilizando el historial actual,
+    y actualiza el historial de la conversación.
+    
+    Args:
+        user_question (str): La pregunta que ingresa el usuario.
+    
+    Returns:
+        str: La respuesta generada por el modelo.
     """
     global chat_history
     try:
         result = qa_chain.invoke({"question": user_question, "chat_history": chat_history})
         answer = result.get("answer", "No estoy seguro de cómo responder eso.")
-        chat_history = result.get("chat_history", [])  # Actualiza el historial de chat
+        chat_history = result.get("chat_history", [])
+
+        # Llamamos a la función para formatear el texto antes de devolver la respuesta
+        answer = formatear_texto(answer)
         
-        # Respuesta por defecto si no hay información relevante
-        if "No relevant context found" in answer or not answer.strip():
-            answer = (
-                "No tengo una respuesta exacta para eso, pero estoy aquí para ayudarte. "
-                "¿Quieres preguntar algo más o saber sobre Promtior?"
-            )
+        # Si se detectan marcadores de respuesta incompleta, se proporciona un fallback
+        if "[insert date here]" in answer or "[fecha de inicio]" in answer or not answer.strip():
+            answer = "Lo siento, no tengo esa información específica."
         
         return answer
     except Exception as e:
         return f"Lo siento, ocurrió un error: {str(e)}"
-
 
 def start_interactive_chat():
     """Función para la interacción en la terminal."""
@@ -76,7 +89,7 @@ def start_interactive_chat():
             break
 
         answer = ask_question(user_message)  # Obtiene la respuesta
-        print(f"Bot: {answer}")  # Muestra la respuesta
+        print(f"Bot: {answer}") 
 
 # Evitar que el chat se ejecute automáticamente si se importa este archivo
 if __name__ == "__main__":
@@ -95,5 +108,4 @@ if __name__ == "__main__":
 
 # iniciar: venv\Scripts\activate
 # ejecuta: python chatbot.py
-# ejecutar: gui.py
 # preguntas:  question = "What services does Promtior offer?"  question = "When was the company founded?"

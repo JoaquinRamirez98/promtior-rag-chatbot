@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import requests
 import os
 from PyPDF2 import PdfReader
-import os
 from langchain.text_splitter import CharacterTextSplitter
 
 def load_website_content(url):
@@ -29,20 +28,21 @@ def load_pdf_content(pdf_path):
         pdf_text = ""
         reader = PdfReader(pdf_path)
         for page in reader.pages:
-            pdf_text += page.extract_text()  # Extrae el texto de cada página
-
+            page_text = page.extract_text()
+            if page_text:
+                pdf_text += page_text
+            else:
+                print("Advertencia: No se encontró texto en una página.")
         if not pdf_text.strip():
             print(f"El PDF no contiene texto legible o está dañado: {pdf_path}")
             return None
-
-        return pdf_text.strip()  # Devuelve el texto limpio
-
+        return pdf_text.strip()
     except Exception as e:
         print(f"Error al leer el PDF con PyPDF2: {e}")
         return None
 
 def create_vectorstore(text, embeddings_class):
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)  # Ajuste para chunks más grandes
+    text_splitter = CharacterTextSplitter(chunk_size=10000, chunk_overlap=200)  # Ajuste para chunks más grandes
     chunks = text_splitter.split_text(text)
 
     print(f"Generated {len(chunks)} text chunks.")

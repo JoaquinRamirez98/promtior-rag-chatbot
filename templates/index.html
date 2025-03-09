@@ -46,6 +46,10 @@
 <body>
     <h1>Chatbot de Promtior</h1>
 
+    <div id="info-context">
+        <p>Este chatbot utiliza el contexto extraído únicamente de fuentes oficiales de Promtior (sitio web y documentos PDF) para responder a tus preguntas.</p>
+    </div>
+
     <div id="upload-container">
         <h2>Cargar un archivo PDF</h2>
         <form id="pdf-upload-form" enctype="multipart/form-data">
@@ -63,7 +67,7 @@
         </form>
     </div>
 
-    <script>
+    <script white-space: pre-wrap;>
         const chatHistory = document.getElementById("chat-history");
 
         // Manejo de la carga del PDF
