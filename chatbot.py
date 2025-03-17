@@ -3,7 +3,7 @@ import os
 import google.generativeai as genai
 
 # Define la clave API directamente en el código
-api_key = "AIzaSyDqJpBjsgOfBcP5ZE9TmSDD200_DEAHIQw"  # Reemplaza con tu clave real
+api_key = "AIzaSyCpTy_eqpCsrOSyBw6YFjyaVRH2x_CbDH0"  # Reemplaza con tu clave real
 
 # Configurar tu clave de API de Gemini
 genai.configure(api_key=api_key)
