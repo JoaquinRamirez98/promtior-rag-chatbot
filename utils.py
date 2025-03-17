@@ -1,18 +1,16 @@
 from langchain_community.vectorstores import FAISS
-from langchain_ollama.embeddings import OllamaEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter
 from bs4 import BeautifulSoup
 import requests
 import os
 from PyPDF2 import PdfReader
-import os
-from langchain.text_splitter import CharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
 
 def load_website_content(url):
     """Carga el contenido de un sitio web."""
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Lanza una excepción si hay un error de HTTP
+        response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
         return soup.get_text(separator="\n").strip()
     except requests.exceptions.RequestException as e:
@@ -22,36 +20,26 @@ def load_website_content(url):
 def load_pdf_content(pdf_path):
     """Carga el contenido de un archivo PDF utilizando PyPDF2."""
     if not os.path.exists(pdf_path):
-        print(f"PDF file not found: {pdf_path}")
+        print(f"Archivo PDF no encontrado: {pdf_path}")
         return None
-
     try:
         pdf_text = ""
         reader = PdfReader(pdf_path)
         for page in reader.pages:
-            pdf_text += page.extract_text()  # Extrae el texto de cada página
-
+            text = page.extract_text()
+            if text:
+                pdf_text += text
         if not pdf_text.strip():
             print(f"El PDF no contiene texto legible o está dañado: {pdf_path}")
             return None
-
-        return pdf_text.strip()  # Devuelve el texto limpio
-
+        return pdf_text.strip()
     except Exception as e:
         print(f"Error al leer el PDF con PyPDF2: {e}")
         return None
 
-def create_vectorstore(text, embeddings_class):
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)  # Ajuste para chunks más grandes
+def create_vectorstore(text, embeddings_instance):
+    """Crea un almacén vectorial (vectorstore) a partir del texto proporcionado."""
+    text_splitter = CharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
     chunks = text_splitter.split_text(text)
-
-    print(f"Generated {len(chunks)} text chunks.")
-    return FAISS.from_texts(chunks, embeddings_class)
-
-# Función para realizar consultas al chatbot
-def query_chatbot(qa_chain, question, chat_history):
-    response = qa_chain.invoke({
-        'question': question,
-        'chat_history': chat_history
-    })
-    return response['answer']
+    print(f"Se generaron {len(chunks)} fragmentos de texto.")
+    return FAISS.from_texts(chunks, embeddings_instance)
