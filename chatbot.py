@@ -46,26 +46,32 @@ def start_interactive_chat():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
     # Carga el contenido (reemplaza con tu URL y ruta de PDF)
-    website_url = "https://www.ejemplo.com"
-    website_content = load_website_content(website_url) or ""
+    website_url = "https://www.ejemplo.com"  # Puedes dejarlo vacío si solo usas el PDF
+    pdf_path = "AI Engineer.pdf"  # Ruta correcta al archivo PDF
 
-    pdf_path = "mi_documento.pdf"
-    pdf_content = load_pdf_content(pdf_path) or ""
+    try:
+        website_content = load_website_content(website_url) or ""
+        pdf_content = load_pdf_content(pdf_path) or ""
+        all_content = website_content + "\n" + pdf_content
 
-    all_content = website_content + "\n" + pdf_content
+        print(f"Contenido a vectorizar: {all_content}")  # Añade esta línea
 
-    # Crea el vectorstore
-    vectorstore = create_vectorstore(all_content, embeddings)
+        # Crea el vectorstore
+        vectorstore = create_vectorstore(all_content, embeddings)
 
-    print("Bienvenido al chatbot de Promtior. Escribe 'exit' para salir.")
-    while True:
-        user_message = input("Tú: ")
-        if user_message.lower() == "exit":
-            print("¡Gracias por usar el chatbot! Hasta luego.")
-            break
+        print("Bienvenido al chatbot de Promtior. Escribe 'exit' para salir.")
+        while True:
+            user_message = input("Tú: ")
+            if user_message.lower() == "exit":
+                print("¡Gracias por usar el chatbot! Hasta luego.")
+                break
 
-        answer = ask_question(user_message, vectorstore)  # Pasa el vectorstore a la funcion
-        print(f"Bot: {answer}")
+            answer = ask_question(user_message, vectorstore)  # Pasa el vectorstore a la funcion
+            print(f"Bot: {answer}")
+
+    except Exception as e:
+        print(f"Error durante la inicialización: {e}")
+        print("El chatbot no pudo inicializarse correctamente.")
 
 
 if __name__ == "__main__":
