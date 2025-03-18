@@ -1,3 +1,4 @@
+# app.py
 from flask import Flask, request, jsonify, render_template
 from chatbot import ask_question  # Importa solo ask_question
 from utils import load_pdf_content, create_vectorstore  # Importa desde utils
@@ -42,3 +43,6 @@ if __name__ == "__main__":
         print(f"Vectorstore creado Correctamente")
     else:
         print(f"Error al cargar el PDF")
+
+    #Para el tema del txt
+    # app.run(debug=True, host="0.0.0.0", port=8000)
