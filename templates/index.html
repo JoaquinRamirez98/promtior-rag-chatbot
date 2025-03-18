@@ -33,14 +33,6 @@
             text-align: left;
             color: #555;
         }
-        #upload-container {
-            max-width: 600px;
-            margin: 0 auto 20px auto;
-            text-align: center;
-        }
-        #upload-container input, #upload-container button {
-            margin: 10px 0;
-        }
     </style>
 </head>
 <body>
@@ -57,7 +49,6 @@
 
     <script>
         const chatHistory = document.getElementById("chat-history");
-
         // Manejo de preguntas al chatbot
         document.getElementById("chat-form").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -69,7 +60,7 @@
             userMessage.textContent = `Tú: ${userQuestion}`;
             chatHistory.appendChild(userMessage);
 
-            const response = await fetch("/ask", { // AQUI ES IMPORTANTE QUE SEA /ASK
+            const response = await fetch("/ask", { //Modificado
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
