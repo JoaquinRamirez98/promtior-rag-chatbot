@@ -43,3 +43,4 @@ def create_vectorstore(text, embeddings_instance):
     chunks = text_splitter.split_text(text)
     print(f"Se generaron {len(chunks)} fragmentos de texto.")
     return FAISS.from_texts(chunks, embeddings_instance)
+
