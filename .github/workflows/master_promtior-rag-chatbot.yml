@@ -78,4 +78,4 @@ jobs:
         with:
           app-name: 'promtior-rag-chatbot'
           slot-name: 'Production'
-          
+          enable-onedeply: false  # Deshabilitar OneDeploy
